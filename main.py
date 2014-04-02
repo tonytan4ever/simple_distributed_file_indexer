@@ -6,6 +6,10 @@ Strategy:
    that holds words' statistics.
 3. Distribute the work load on worker process in a round-robin fashion
 
+Protocol:
+Assign each file's blob to each worker in round-robin style, when all the files are 
+assigned send an EOF to each worker to end the worker process.
+
 Assumption:
 1. Providing a list of files in plain text to index on.
 """
@@ -13,6 +17,7 @@ import multiprocessing
 import sys, argparse
 import zmq
 
+EOF = u'\x0004'
 
 def merge(d2):
     for key in d2.keys():
@@ -26,36 +31,35 @@ def init(d):
     master_word_statistics = d
 
 
-def server(port="5556"):
-    context = zmq.Context()
-    socket = context.socket(zmq.REP)
-    socket.bind("tcp://*:%s" % port)
-    
-    # serves only 5 request and dies
-    for reqnum in range(5):
-        # Wait for next request from client
-        message = socket.recv()
-        print "Received request #%s: %s" % (reqnum, message)
-        socket.send("World from %s" % port)
-        
-
 def worker(connection_string):
     context = zmq.Context()
     socket = context.socket(zmq.PULL)
     socket.bind("tcp://%s" % connection_string)
     print "Running worker process on:  %s\n" % connection_string
     while True:
-        file_blob = socket.recv()
+        print "In event loop..."
+        file_blob = socket.recv_unicode()
+        print "Get %s" % file_blob
+        if file_blob == EOF:
+            break
     
 
 
 def main(N, worker_ip_port_list, files_list):
-    master_word_statistics = multiprocessing.Manager().dict()
-    pool = multiprocessing.Pool(initializer=init, initargs=(master_word_statistics,))
-    pool.map(worker, worker_ip_port_list)
+    #master_word_statistics = multiprocessing.Manager().dict()
+    #pool = multiprocessing.Pool(initializer=init, initargs=(master_word_statistics,))
+    #pool.map_async(worker, worker_ip_port_list)
     #for f in files_list:
-    pool.close()
-    pool.join()   
+    for c in worker_ip_port_list:
+        sender_ctx = zmq.Context()
+        sender_socket = sender_ctx.socket(zmq.PUSH)
+        print "connecting to %s" % c
+        sender_socket.connect("tcp://%s" % c)
+        sender_socket.send_unicode(EOF)
+        print "after send..."
+        sender_socket.close()
+    #pool.close()
+    #pool.join()   
     
 
 
