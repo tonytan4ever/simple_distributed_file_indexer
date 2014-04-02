@@ -37,7 +37,6 @@ def worker(connection_string):
     socket.bind("tcp://%s" % connection_string)
     print "Running worker process on:  %s\n" % connection_string
     while True:
-        print "In event loop..."
         file_blob = socket.recv_unicode()
         print "Get %s" % file_blob
         if file_blob == EOF:
@@ -46,20 +45,19 @@ def worker(connection_string):
 
 
 def main(N, worker_ip_port_list, files_list):
-    #master_word_statistics = multiprocessing.Manager().dict()
-    #pool = multiprocessing.Pool(initializer=init, initargs=(master_word_statistics,))
-    #pool.map_async(worker, worker_ip_port_list)
+    master_word_statistics = multiprocessing.Manager().dict()
+    pool = multiprocessing.Pool(initializer=init, initargs=(master_word_statistics,))
+    pool.map_async(worker, worker_ip_port_list)
     #for f in files_list:
+    sender_ctx = zmq.Context()
+    sender_socket = sender_ctx.socket(zmq.PUSH)
     for c in worker_ip_port_list:
-        sender_ctx = zmq.Context()
-        sender_socket = sender_ctx.socket(zmq.PUSH)
-        print "connecting to %s" % c
         sender_socket.connect("tcp://%s" % c)
         sender_socket.send_unicode(EOF)
-        print "after send..."
-        sender_socket.close()
-    #pool.close()
-    #pool.join()   
+        sender_socket.disconnect("tcp://%s" % c)
+    pool.close()
+    pool.join()
+    sys.exit(0)
     
 
 
