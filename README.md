@@ -24,28 +24,34 @@ standard out.
 
 
 Build/Run Instructions:
-1 This project depends on ZeroMQ, my favorite messaging library. Install ZeroMQ library on a linux machine:
-            ```
-      $wget http://download.zeromq.org/zeromq-4.0.4.tar.gz
 
-      $tar -xzvf zeromq-4.0.4.tar.gz
+1. This project depends on ZeroMQ, my favorite messaging library. Install ZeroMQ library on a linux machine:
 
-      $cd zeromq-4.0.4
+  $wget http://download.zeromq.org/zeromq-4.0.4.tar.gz
+    
+    $tar -xzvf zeromq-4.0.4.tar.gz
+    
+  $cd zeromq-4.0.4
+    
+  $./configure
 
-      $./configure
+    $make && sudo make install
 
-      $make && sudo make install
-      ```
-2. Install pyzmq
-      ```
-      $sudo pip install pyzmq
-      ```
+ 
+
+2. Install pyzmq:
+
+    ```
+    $sudo pip install pyzmq
+    ```
+
 3. You will need to have python installed, to run this app:
-      ```
-      $python main.py [-N <number of workers>] -W <worker_1 ip:port> <worker_2 ip:port> <worker_3 ip:port> -F <file_1_path> <file_2_path>
-      ```
+   ```
+   $python main.py [-N <number of workers>] -W <worker_1 ip:port> <worker_2 ip:port> <worker_3 ip:port> -F <file_1_path> <file_2_path>
+   ```
 
-       e.g: 
-       $python main.py -W 127.0.0.1:5002 127.0.0.1:5004 127.0.0.1:5006 -F test_files/sample.txt test_files/TaleOfTwoCities.txt
-
+    e.g:
+    ``` 
+    $python main.py -W 127.0.0.1:5002 127.0.0.1:5004 127.0.0.1:5006 -F test_files/sample.txt test_files/TaleOfTwoCities.txt
+    ```
        Number of workers has been defaulted to 3.
