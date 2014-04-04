@@ -25,11 +25,15 @@ standard out.
 
 Build/Run Instructions:
 1 This project depends on ZeroMQ, my favorite messaging library. Install ZeroMQ library on a linux machine:
-      ```
+            ```
       $wget http://download.zeromq.org/zeromq-4.0.4.tar.gz
+
       $tar -xzvf zeromq-4.0.4.tar.gz
+
       $cd zeromq-4.0.4
+
       $./configure
+
       $make && sudo make install
       ```
 2. Install pyzmq
