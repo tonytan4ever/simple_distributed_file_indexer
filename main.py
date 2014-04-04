@@ -17,7 +17,12 @@ Assign each file's blob to each worker in round-robin style, when all the files 
 assigned send an EOF to each worker to end the worker process.
 
 Assumption:
-1. Providing a list of files in plain text to index on.
+1. Providing a list of files accessible to master process in plain text to index on.
+   (i.e: A list of readable file paths should be provided as argument to this script)
+2. All file contents are assumed to be "UTF-8" encoding.
+3. Word indexing is case-insensitive, i.e: "The" == 'the'
+4. Exception handling in child process is simple for right now (simply skip the worker process)
+   The elaboration to make exception handling logic is on the TODO list.
 """
 import multiprocessing
 import os, sys, time, argparse, traceback
@@ -27,9 +32,13 @@ from tokenize import tokenize_line
 
 EOF = u'\x0004'
 
+# A global dicitonary is used to keep the indexing result.
 master_word_statistics = {}
 
 def merge(worker_result):
+    """
+    Merge worker process's result into the master collection.
+    """
     global master_word_statistics
     for key in worker_result.keys():
         if key in master_word_statistics:
