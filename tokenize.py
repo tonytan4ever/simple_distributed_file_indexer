@@ -15,6 +15,7 @@ VERY_LARGE_DICT_LENGTH = 10
 def tokenize_line(line, word_statistic_dict):
     word_list = WORD_REGEX.findall(line)
     for word in word_list:
+        # case insensitive match
         word = word.lower()
         if not word in word_statistic_dict:
             word_statistic_dict[word] = 1
