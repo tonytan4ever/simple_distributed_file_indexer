@@ -101,9 +101,9 @@ def main(N, worker_ip_port_list, files_list):
             sender_socket.connect("tcp://%s" % worker_ip_port)
             sender_socket.send_unicode(s.decode("UTF-8"))
             message = sender_socket.recv_unicode()
-            print "Received reply from %s, file %s is processing..." % (worker_ip_port, f)
+            print("Received reply from %s, file %s is processing..." % (worker_ip_port, f))
             sender_socket.disconnect("tcp://%s" % worker_ip_port)
-        except IOError, e:
+        except (IOError, zmq.ZMQError):
             print("Error while processing file %s, error info:" % f)
             traceback.print_exc()
             
@@ -112,7 +112,7 @@ def main(N, worker_ip_port_list, files_list):
         sender_socket.connect("tcp://%s" % c)
         sender_socket.send_unicode(EOF)
         message = sender_socket.recv_unicode()
-        print "Worker process running on %s is terminated..." % c 
+        print("Worker process running on %s is terminated..." % c) 
         sender_socket.disconnect("tcp://%s" % c)
     for r in results:
         r.wait()
