@@ -42,27 +42,39 @@ def worker(connection_string):
     """
     To do:
     Failure mode: 
-    How to handle failures in a worker process ?
+    How to handle failures in a worker process ? current strategy:
+       Ignore the current file blob and terminate the current worker process.
+       Improvement is possible here... 
     """
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind("tcp://%s" % connection_string)
     print("Running worker process on:  %s\n" % connection_string)
     worker_local_statistics = {}
-    while True:
-        file_blob = socket.recv_unicode()
-        if file_blob == EOF:
-            print("Get EOF, shutdown worker process %s..." % os.getpid())
-            socket.send_unicode("Get EOF, shutdown worker process %s..." % os.getpid())
-            break
-        else:
-            socket.send_unicode("Worker process %s gets message, building index on it..." % os.getpid())
-            tokenize_line(file_blob, worker_local_statistics)
+    try:
+        while True:
+            file_blob = socket.recv_unicode()
+            if file_blob == EOF:
+                print("Get EOF, shutdown worker process %s..." % os.getpid())
+                socket.send_unicode("Get EOF, shutdown worker process %s..." % os.getpid())
+                break
+            else:
+                socket.send_unicode("Worker process %s gets message, building index on it..." % os.getpid())
+                tokenize_line(file_blob, worker_local_statistics)
+    except zmq.ZMQError:
+        pass
     print("Ending worker process... %s" % str(os.getpid()))
     return worker_local_statistics
 
 
 def main(N, worker_ip_port_list, files_list):
+    """
+    input: N: number of workers
+           worker_ip_port_list: a python list of worker connection strings, in the format of [<ip>:<port>,]
+           file_list: a python list of file path strings
+    output:
+           a list of tuples of (<popularwords>, <number of occureances>)
+    """
     pool = multiprocessing.Pool(processes=N)
     results = []
     for w_ip_port in worker_ip_port_list:
@@ -97,7 +109,7 @@ def main(N, worker_ip_port_list, files_list):
         r.wait()
     pool.close()
     pool.join()
-    # sort the word statistics by it's number of appeareance. 
+    # sort the word statistics by its occurrence. 
     sorted_word_statistics = sorted(master_word_statistics.iteritems(), 
                                       key=lambda word_number_tuple: word_number_tuple[1], 
                                       reverse=True)
@@ -129,7 +141,7 @@ if __name__ == '__main__':
         print("The number of worker's ip:port connection string does not match: %s" % N)
     res = main(N, worker_ip_port_list, files_list)
     #print res
-    print "Top 10 words are: %s" % str([t[0] for t in res])
+    print("Top 10 words are: %s" % str([t[0] for t in res]))
     time.sleep(0.1)
     sys.exit(0)
         
