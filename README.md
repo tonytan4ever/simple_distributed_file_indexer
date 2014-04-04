@@ -45,7 +45,9 @@ Build/Run Instructions:
     $sudo pip install pyzmq
     ```
 
-3. You will need to have python installed, to run this app:
+3. Clone this project, cd to your cloned directory.
+
+4. You will need to have python2.7 (python 3 should work, have not tested) installed to run this app:
    ```
    $python main.py [-N <number of workers>] -W <worker_1 ip:port> <worker_2 ip:port> <worker_3 ip:port> -F <file_1_path> <file_2_path>
    ```
